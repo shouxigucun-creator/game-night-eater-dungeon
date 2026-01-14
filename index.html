@@ -32,7 +32,13 @@ button{padding:6px;margin:2px}
 <div id="map"></div>
 </div>
 <script>
-let floor=1,hp=30,food=100;
+ const top = document.getElementById("top");
+const game = document.getElementById("game");
+const gacha = document.getElementById("gacha");
+const mapDiv = document.getElementById("map");
+const ui = document.getElementById("ui");
+const gachaResult = document.getElementById("gachaResult");
+
 let px=1,py=1;
 let map=[];
 const size=9;
