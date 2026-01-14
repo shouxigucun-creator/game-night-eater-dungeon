@@ -13,10 +13,12 @@ body{
   font-family:sans-serif;
   text-align:center;
 }
-button{
-  padding:12px;
-  margin:10px;
-  font-size:18px;
+#startBtn{
+  margin-top:40px;
+  padding:20px;
+  background:#222;
+  border:2px solid #555;
+  font-size:22px;
 }
 #game{display:none}
 #map{
@@ -30,7 +32,6 @@ button{
   border:1px solid #333;
 }
 .player{background:#0af}
-.wall{background:#111}
 </style>
 </head>
 
@@ -38,7 +39,7 @@ button{
 
 <div id="top">
   <h1>夜喰らいの迷宮</h1>
-  <button id="start">冒険開始</button>
+  <div id="startBtn" onclick="startGame()">▶ 冒険開始</div>
 </div>
 
 <div id="game">
@@ -46,30 +47,29 @@ button{
 </div>
 
 <script>
-const top = document.getElementById("top");
-const game = document.getElementById("game");
+const topDiv = document.getElementById("top");
+const gameDiv = document.getElementById("game");
 const map = document.getElementById("map");
 
-const size = 5;
 let px=2, py=2;
+
+function startGame(){
+  topDiv.style.display="none";
+  gameDiv.style.display="block";
+  draw();
+}
 
 function draw(){
   map.innerHTML="";
-  for(let y=0;y<size;y++){
-    for(let x=0;x<size;x++){
-      let d=document.createElement("div");
+  for(let y=0;y<5;y++){
+    for(let x=0;x<5;x++){
+      const d=document.createElement("div");
       d.className="cell";
       if(x===px && y===py) d.classList.add("player");
       map.appendChild(d);
     }
   }
 }
-
-document.getElementById("start").onclick=()=>{
-  top.style.display="none";
-  game.style.display="block";
-  draw();
-};
 </script>
 
 </body>
