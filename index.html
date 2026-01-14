@@ -2,79 +2,124 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>夜喰らいの迷宮 完成版</title>
+
 <style>
-body{margin:0;background:#000;color:#eee;font-family:sans-serif}
-#top,#game,#gacha{display:none}
+body{
+  margin:0;
+  background:#000;
+  color:#eee;
+  font-family:sans-serif;
+}
+
+/* 最初はトップだけ表示 */
+#game{display:none;}
+
 h2{text-align:center}
-#map{display:grid;grid-template-columns:repeat(9,32px);justify-content:center}
-.cell{width:32px;height:32px;border:1px solid #222;text-align:center;line-height:32px}
+
+#map{
+  display:grid;
+  grid-template-columns:repeat(9,32px);
+  justify-content:center;
+  margin-top:10px;
+}
+
+.cell{
+  width:32px;
+  height:32px;
+  border:1px solid #222;
+}
+
 .wall{background:#111}
 .player{background:#09f}
-.enemy{background:#900}
 .stairs{background:#0a0}
-.night .cell{filter:brightness(0.6)}
-#ui{padding:6px;font-size:14px;text-align:center}
-button{padding:6px;margin:2px}
+
+#ui{
+  padding:6px;
+  text-align:center;
+  font-size:14px;
+}
+
+button{
+  padding:8px 12px;
+  margin:6px;
+}
+a{
+  display:block;
+  text-align:center;
+  color:#0af;
+  margin-bottom:10px;
+}
 </style>
 </head>
+
 <body>
+
 <div id="top">
-<h2>🌑 夜喰らいの迷宮</h2>
-<a href="https://github.com/shouxigucun-creator/game-night-eater-dungeon/archive/refs/heads/main.zip">
-📦 ZIPダウンロード
-</a>
-<button onclick="start()">▶ 冒険開始</button>
+  <h2>🌙 夜喰らいの迷宮</h2>
+
+  <a href="https://github.com/shouxigucun-creator/game-night-eater-dungeon/archive/refs/heads/main.zip">
+    📦 ZIPダウンロード
+  </a>
+
+  <div style="text-align:center">
+    <button onclick="start()">▶ 冒険開始</button>
+  </div>
 </div>
+
 <div id="game">
-<div id="ui"></div>
-<div id="map"></div>
+  <div id="ui"></div>
+  <div id="map"></div>
 </div>
+
 <script>
- const top = document.getElementById("top");
-const game = document.getElementById("game");
-const gacha = document.getElementById("gacha");
-const mapDiv = document.getElementById("map");
-const ui = document.getElementById("ui");
-const gachaResult = document.getElementById("gachaResult");
+const topDiv = document.getElementById("top");
+const gameDiv = document.getElementById("game");
+const mapDiv  = document.getElementById("map");
+const ui      = document.getElementById("ui");
 
-let px=1,py=1;
-let map=[];
-const size=9;
-
- let floor = 1;
+const size = 9;
+let map = [];
+let px = 1, py = 1;
+let floor = 1;
 let hp = 10;
 let food = 3;
 
 function gen(){
- map=[];
- for(let y=0;y<size;y++){
-  let r=[];
-  for(let x=0;x<size;x++)r.push(Math.random()<0.15?"#":".");
-  map.push(r);
- }
- map[1][1]="P"; map[7][7]=">";
+  map = [];
+  for(let y=0;y<size;y++){
+    let r=[];
+    for(let x=0;x<size;x++){
+      r.push(Math.random()<0.15 ? "#" : ".");
+    }
+    map.push(r);
+  }
+  map[1][1] = "P";
+  map[7][7] = ">";
 }
 
 function draw(){
- mapDiv.innerHTML="";
- for(let y=0;y<size;y++)for(let x=0;x<size;x++){
-  let c="cell";
-  if(map[y][x]==="#")c+=" wall";
-  if(px==x&&py==y)c+=" player";
-  if(map[y][x]===">")c+=" stairs";
-  mapDiv.innerHTML+=`<div class="${c}"></div>`;
- }
- ui.textContent=`${floor}F HP:${hp} 🍙:${food}`;
+  mapDiv.innerHTML = "";
+  for(let y=0;y<size;y++){
+    for(let x=0;x<size;x++){
+      let c="cell";
+      if(map[y][x]==="#") c+=" wall";
+      if(px===x && py===y) c+=" player";
+      if(map[y][x]===">") c+=" stairs";
+      mapDiv.innerHTML += `<div class="${c}"></div>`;
+    }
+  }
+  ui.textContent = `${floor}F  ❤️HP:${hp}  🍖:${food}`;
 }
 
 function start(){
- top.style.display="none";
- game.style.display="block";
- gen();draw();
+  topDiv.style.display="none";
+  gameDiv.style.display="block";
+  gen();
+  draw();
 }
-top.style.display="block";
 </script>
+
 </body>
 </html>
