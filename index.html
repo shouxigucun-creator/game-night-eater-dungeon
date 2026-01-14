@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>夜喰らいの迷宮</title>
 
 <style>
@@ -14,17 +14,17 @@ body{
   text-align:center;
 }
 
-#top,#game,#gacha,#zukan{display:none}
-
 button{
   background:#111;
   color:#fff;
   border:1px solid #444;
-  padding:10px 20px;
+  padding:10px 18px;
   margin:6px;
   border-radius:6px;
   font-size:16px;
 }
+
+#top,#game,#gacha,#zukan{display:none}
 
 #map{
   display:grid;
@@ -42,38 +42,29 @@ button{
 .night .cell{filter:brightness(.35)}
 .night .player,.night .enemy,.night .stairs{filter:brightness(1)}
 
-#ui{margin:8px}
-
-/* SSR */
 .ssr{
   color:gold;
-  text-shadow:0 0 15px gold;
-  animation:flash .3s infinite alternate;
-}
-@keyframes flash{
-  from{transform:scale(1)}
-  to{transform:scale(1.1)}
+  text-shadow:0 0 12px gold;
+  font-weight:bold;
 }
 
 .zukan-item{
   border:1px solid #333;
-  margin:8px;
-  padding:8px;
+  margin:6px;
+  padding:6px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- ===== TITLE ===== -->
 <div id="top">
   <h1>🌙 夜喰らいの迷宮</h1>
-  <button onclick="start()">▶ 冒険開始</button>
-  <button onclick="openGacha()">🎰 ガチャ</button>
-  <button onclick="openZukan()">📖 図鑑</button>
+  <button id="btnStart">▶ 冒険開始</button>
+  <button id="btnGacha">🎰 ガチャ</button>
+  <button id="btnZukan">📖 図鑑</button>
 </div>
 
-<!-- ===== GAME ===== -->
 <div id="game">
   <div id="ui"></div>
   <div id="map"></div>
@@ -85,142 +76,154 @@ button{
   </div>
 </div>
 
-<!-- ===== GACHA ===== -->
 <div id="gacha">
   <h2>🎰 闇のガチャ</h2>
   <p id="gachaResult"></p>
-  <button onclick="roll()">回す</button>
-  <button onclick="back()">戻る</button>
+  <button id="btnRoll">回す</button><br>
+  <button onclick="backToTop()">戻る</button>
 </div>
 
-<!-- ===== ZUKAN ===== -->
 <div id="zukan">
   <h2>📖 モンスター図鑑</h2>
   <div id="zukanList"></div>
-  <button onclick="back()">戻る</button>
+  <button onclick="backToTop()">戻る</button>
 </div>
 
 <script>
-const size=9;
-let map=[],px,py,floor,hp,food,enemies=[];
-let discovered={};
+/* ===== DOM完全読込後に開始 ===== */
+window.addEventListener("DOMContentLoaded",()=>{
 
-const monsters={
-  slime:{name:"闇スライム",atk:2},
-  wolf:{name:"夜狼",atk:4}
-};
+  const top = document.getElementById("top");
+  const game = document.getElementById("game");
+  const gacha = document.getElementById("gacha");
+  const zukan = document.getElementById("zukan");
+  const mapDiv = document.getElementById("map");
+  const ui = document.getElementById("ui");
+  const gachaResult = document.getElementById("gachaResult");
+  const zukanList = document.getElementById("zukanList");
 
-/* ===== 生成 ===== */
-function gen(){
-  map=[];
-  for(let y=0;y<size;y++){
-    let r=[];
-    for(let x=0;x<size;x++)
-      r.push(Math.random()<0.15?"#":".");
-    map.push(r);
+  const size = 9;
+  let map=[],px,py,floor,hp,food,enemies=[];
+  let discovered={};
+
+  const monsters={
+    slime:{name:"闇スライム",atk:2},
+    wolf:{name:"夜狼",atk:4}
+  };
+
+  function gen(){
+    map=[];
+    for(let y=0;y<size;y++){
+      let r=[];
+      for(let x=0;x<size;x++){
+        r.push(Math.random()<0.15?"#":".");
+      }
+      map.push(r);
+    }
+    px=1;py=1;
+    map[7][7]=">";
+    enemies=[
+      {x:4,y:4,type:"slime"},
+      {x:6,y:2,type:"wolf"}
+    ];
   }
-  px=1;py=1;
-  map[7][7]=">";
-  enemies=[
-    {x:4,y:4,type:"slime"},
-    {x:6,y:2,type:"wolf"}
-  ];
-}
 
-/* ===== 描画 ===== */
-function draw(){
-  document.body.className=floor>=5?"night":"";
-  mapDiv.innerHTML="";
-  for(let y=0;y<size;y++){
-    for(let x=0;x<size;x++){
-      let c="cell";
-      if(map[y][x]==="#")c+=" wall";
-      if(px===x&&py===y)c+=" player";
-      if(map[y][x]===">")c+=" stairs";
-      enemies.forEach(e=>{if(e.x===x&&e.y===y)c+=" enemy"});
-      mapDiv.innerHTML+=`<div class="${c}"></div>`;
+  function draw(){
+    document.body.className = floor>=5 ? "night" : "";
+    mapDiv.innerHTML="";
+    for(let y=0;y<size;y++){
+      for(let x=0;x<size;x++){
+        let c="cell";
+        if(map[y][x]==="#")c+=" wall";
+        if(px===x&&py===y)c+=" player";
+        if(map[y][x]===">")c+=" stairs";
+        enemies.forEach(e=>{
+          if(e.x===x&&e.y===y)c+=" enemy";
+        });
+        mapDiv.innerHTML+=`<div class="${c}"></div>`;
+      }
+    }
+    ui.textContent = `${floor}F ❤️${hp} 🍖${food}`;
+  }
+
+  window.move = function(dx,dy){
+    let nx=px+dx, ny=py+dy;
+    if(map[ny][nx]==="#")return;
+    px=nx; py=ny;
+    food--;
+
+    enemies.forEach(e=>{
+      if(Math.abs(px-e.x)+Math.abs(py-e.y)<=1){
+        hp -= monsters[e.type].atk;
+        discovered[e.type]=true;
+      }
+    });
+
+    if(map[py][px]===">"){
+      floor++;
+      gen();
+    }
+
+    if(hp<=0||food<=0){
+      alert("💀 ゲームオーバー");
+      location.reload();
+    }
+    draw();
+  };
+
+  function start(){
+    top.style.display="none";
+    game.style.display="block";
+    floor=1;hp=20;food=20;
+    gen();draw();
+  }
+
+  function openGacha(){
+    top.style.display="none";
+    gacha.style.display="block";
+    gachaResult.textContent="";
+  }
+
+  function roll(){
+    if(Math.random()<0.1){
+      gachaResult.innerHTML="<span class='ssr'>SSR！HP+10</span>";
+      hp+=10;
+    }else{
+      gachaResult.textContent="R：食料+5";
+      food+=5;
     }
   }
-  ui.textContent=`${floor}F ❤️${hp} 🍖${food}`;
-}
 
-/* ===== 移動 ===== */
-function move(dx,dy){
-  let nx=px+dx,ny=py+dy;
-  if(map[ny][nx]==="#")return;
-  px=nx;py=ny;
-  food--;
-
-  enemies.forEach(e=>{
-    if(Math.abs(px-e.x)+Math.abs(py-e.y)<=1){
-      hp-=monsters[e.type].atk;
-      discovered[e.type]=true;
+  function openZukan(){
+    top.style.display="none";
+    zukan.style.display="block";
+    zukanList.innerHTML="";
+    for(let k in monsters){
+      if(discovered[k]){
+        zukanList.innerHTML+=
+          `<div class="zukan-item">${monsters[k].name}</div>`;
+      }
     }
-  });
-
-  if(map[py][px]===">"){
-    floor++;
-    gen();
-  }
-
-  if(hp<=0||food<=0){
-    alert("💀 ゲームオーバー");
-    location.reload();
-  }
-  draw();
-}
-
-/* ===== 開始 ===== */
-function start(){
-  top.style.display="none";
-  game.style.display="block";
-  floor=1;hp=20;food=20;
-  gen();draw();
-}
-
-/* ===== GACHA ===== */
-function openGacha(){
-  top.style.display="none";
-  gacha.style.display="block";
-}
-function roll(){
-  if(Math.random()<0.1){
-    gachaResult.innerHTML="<span class='ssr'>SSR！HP+10</span>";
-    hp+=10;
-  }else{
-    gachaResult.textContent="R：食料+5";
-    food+=5;
-  }
-}
-
-/* ===== 図鑑 ===== */
-function openZukan(){
-  top.style.display="none";
-  zukan.style.display="block";
-  zukanList.innerHTML="";
-  for(let k in monsters){
-    if(discovered[k]){
-      zukanList.innerHTML+=
-        `<div class="zukan-item">${monsters[k].name}</div>`;
+    if(!zukanList.innerHTML){
+      zukanList.innerHTML="<p>未発見</p>";
     }
   }
-  if(!zukanList.innerHTML)
-    zukanList.innerHTML="<p>未発見</p>";
-}
 
-function back(){
-  gacha.style.display="none";
-  zukan.style.display="none";
+  window.backToTop = function(){
+    game.style.display="none";
+    gacha.style.display="none";
+    zukan.style.display="none";
+    top.style.display="block";
+  };
+
+  document.getElementById("btnStart").onclick=start;
+  document.getElementById("btnGacha").onclick=openGacha;
+  document.getElementById("btnZukan").onclick=openZukan;
+  document.getElementById("btnRoll").onclick=roll;
+
   top.style.display="block";
-}
-
-top.style.display="block";
+});
 </script>
-const mapDiv = document.getElementById("map");
-const ui = document.getElementById("ui");
-const top = document.getElementById("top");
-const game = document.getElementById("game");
-const gacha = document.getElementById("gacha");
-const zukan = document.getElementById("zukan");
+
 </body>
 </html>
