@@ -7,7 +7,6 @@
 
 <style>
 body{
-  <h1 style="color:white">TEST 表示されています</h1>
   margin:0;
   background:#000;
   color:#eee;
@@ -114,12 +113,12 @@ function draw(){
   ui.textContent = `${floor}F  ❤️HP:${hp}  🍖:${food}`;
 }
 
-function start(){
-  topDiv.style.display="none";
-  gameDiv.style.display="block";
-  gen();
-  draw();
+  function start(){
+  top.style.display="none";
+  game.style.display="block";
+  gen();draw();
 }
+draw();
 </script>
 
 </body>
