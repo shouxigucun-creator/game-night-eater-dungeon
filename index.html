@@ -2,74 +2,151 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <title>夜喰らいの迷宮</title>
 
 <style>
 body{
   margin:0;
-  background:black;
-  color:white;
-  font-family:sans-serif;
+  background:#000;
+  color:#fff;
+  font-family:system-ui;
   text-align:center;
 }
-#startBtn{
-  margin-top:40px;
-  padding:20px;
-  background:#222;
-  border:2px solid #555;
-  font-size:22px;
+
+/* ---------- タイトル ---------- */
+#top{
+  padding-top:60px;
 }
-#game{display:none}
+#startBtn{
+  margin-top:30px;
+  display:inline-block;
+  padding:14px 28px;
+  background:#1e90ff;
+  border-radius:8px;
+  font-size:20px;
+  user-select:none;
+}
+
+/* ---------- ゲーム ---------- */
+#game{
+  display:none;
+}
+#ui{
+  margin:12px 0;
+}
 #map{
   display:grid;
-  grid-template-columns:repeat(5,40px);
+  grid-template-columns:repeat(10,24px);
+  grid-template-rows:repeat(10,24px);
+  gap:2px;
   justify-content:center;
-  margin:auto;
 }
+
 .cell{
-  width:40px;height:40px;
-  border:1px solid #333;
+  width:24px;
+  height:24px;
+  background:#111;
 }
-.player{background:#0af}
+.wall{background:#333;}
+.player{background:#00aaff;}
+.stairs{background:#00cc44;}
+.enemy{background:#cc0000;}
+.dark{filter:brightness(0.2);}
 </style>
 </head>
 
 <body>
 
+<!-- ===== タイトル ===== -->
 <div id="top">
-  <h1>夜喰らいの迷宮</h1>
-  <div id="startBtn" onclick="startGame()">▶ 冒険開始</div>
+  <h1>🌙 夜喰らいの迷宮</h1>
+  <!-- ZIP文言は存在しない -->
+  <div id="startBtn" ontouchstart="startGame()">▶ 冒険開始</div>
 </div>
 
+<!-- ===== ゲーム画面 ===== -->
 <div id="game">
+  <div id="ui"></div>
   <div id="map"></div>
 </div>
 
 <script>
+/* ---------- 取得 ---------- */
+const mapDiv = document.getElementById("map");
+const ui = document.getElementById("ui");
 const topDiv = document.getElementById("top");
 const gameDiv = document.getElementById("game");
-const map = document.getElementById("map");
 
-let px=2, py=2;
+/* ---------- 状態 ---------- */
+const size = 10;
+let map = [];
+let px = 1, py = 1;
+let hp = 10;
+let floor = 1;
 
+/* ---------- 生成 ---------- */
+function gen(){
+  map=[];
+  for(let y=0;y<size;y++){
+    const r=[];
+    for(let x=0;x<size;x++){
+      r.push(Math.random()<0.15 ? "#" : ".");
+    }
+    map.push(r);
+  }
+  map[1][1]="P";
+  map[size-2][size-2]=">";
+}
+
+/* ---------- 描画 ---------- */
+function draw(){
+  mapDiv.innerHTML="";
+  for(let y=0;y<size;y++){
+    for(let x=0;x<size;x++){
+      let c="cell";
+      if(map[y][x]==="#") c+=" wall";
+      if(x===px && y===py) c+=" player";
+      if(map[y][x]===">") c+=" stairs";
+
+      // 視界制限（夜フロア）
+      if(Math.abs(px-x)+Math.abs(py-y)>2) c+=" dark";
+
+      mapDiv.innerHTML+=`<div class="${c}"></div>`;
+    }
+  }
+  ui.textContent=`${floor}F  ❤️HP:${hp}`;
+}
+
+/* ---------- 開始 ---------- */
 function startGame(){
   topDiv.style.display="none";
   gameDiv.style.display="block";
+  gen();
   draw();
 }
 
-function draw(){
-  map.innerHTML="";
-  for(let y=0;y<5;y++){
-    for(let x=0;x<5;x++){
-      const d=document.createElement("div");
-      d.className="cell";
-      if(x===px && y===py) d.classList.add("player");
-      map.appendChild(d);
-    }
+/* ---------- キーボード ---------- */
+document.addEventListener("keydown",e=>{
+  let dx=0,dy=0;
+  if(e.key==="ArrowUp")dy=-1;
+  if(e.key==="ArrowDown")dy=1;
+  if(e.key==="ArrowLeft")dx=-1;
+  if(e.key==="ArrowRight")dx=1;
+
+  const nx=px+dx, ny=py+dy;
+  if(nx<0||ny<0||nx>=size||ny>=size) return;
+  if(map[ny][nx]==="#") return;
+
+  px=nx; py=ny;
+
+  if(map[ny][nx]===">"){
+    floor++;
+    px=1; py=1;
+    gen();
   }
-}
+  draw();
+});
 </script>
 
 </body>
